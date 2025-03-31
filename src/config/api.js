@@ -1,7 +1,7 @@
 // src/config/api.js
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7070';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mygenius-f1dc97d5ca0f.herokuapp.com';
 
 export const ENDPOINTS = {
     AUTH: {
