@@ -4,20 +4,35 @@ import axios from "axios";
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mygenius-f1dc97d5ca0f.herokuapp.com';
 
 // Token handling function
-const getStoredToken = () => localStorage.getItem('auth_token');
-const setStoredToken = (token) => localStorage.setItem('auth_token', token);
-const clearStoredToken = () => localStorage.removeItem('auth_token');
+export const getStoredToken = () => localStorage.getItem('auth_token');
+export const setStoredToken = (token) => localStorage.setItem('auth_token', token);
+export const clearStoredToken = () => localStorage.removeItem('auth_token');
 
-// Check URL for token parameter (for OAuth redirect)
-const checkURLForToken = () => {
+// Check URL for auth code parameter and exchange it for a token
+const checkURLForCode = async () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const token = urlParams.get('token');
-  if (token) {
-    setStoredToken(token);
-    // Clean URL
-    const cleanURL = window.location.href.split('?')[0];
-    window.history.replaceState({}, document.title, cleanURL);
-    return token;
+  const code = urlParams.get('code');
+  
+  if (code) {
+    try {
+      // Exchange the code for a token
+      const response = await axios.get(`${API_BASE_URL}/api/auth/exchange?code=${code}`, {
+        withCredentials: true
+      });
+      
+      if (response.data && response.data.token) {
+        // Save the token
+        setStoredToken(response.data.token);
+        
+        // Clean URL
+        const cleanURL = window.location.href.split('?')[0];
+        window.history.replaceState({}, document.title, cleanURL);
+        
+        return response.data.token;
+      }
+    } catch (error) {
+      console.error("Error exchanging code for token:", error);
+    }
   }
   return null;
 };
@@ -28,6 +43,7 @@ export const ENDPOINTS = {
         LOGIN: `${API_BASE_URL}/oauth2/authorization/google`,
         LOGOUT: `${API_BASE_URL}/api/auth/logout`,
         TOKEN: `${API_BASE_URL}/api/auth/token`,
+        EXCHANGE: `${API_BASE_URL}/api/auth/exchange`,
     },
     USER: {
         PROFILE: `${API_BASE_URL}/api/user/profile`,
@@ -72,13 +88,14 @@ apiClient.interceptors.response.use(
     }
 );
 
-// Check for token in URL (during initialization)
-checkURLForToken();
+// Initialize by checking for code in URL
+// This is an async function but we handle it inside
+(async () => {
+  try {
+    await checkURLForCode();
+  } catch (error) {
+    console.error("Error during initialization:", error);
+  }
+})();
 
-export default { 
-    ENDPOINTS, 
-    apiClient,
-    getStoredToken,
-    setStoredToken,
-    clearStoredToken
-};
+export default { ENDPOINTS, apiClient };

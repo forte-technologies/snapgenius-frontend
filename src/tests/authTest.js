@@ -1,8 +1,8 @@
 // Simple function to manually test token functionality
 // This is not an automated test, but can be run to verify token handling works
+import { getStoredToken, setStoredToken, clearStoredToken } from '../config/api';
+
 export const testTokenHandling = () => {
-  const { getStoredToken, setStoredToken, clearStoredToken } = require('../config/api');
-  
   console.log('Testing token handling...');
   
   // Test setting token

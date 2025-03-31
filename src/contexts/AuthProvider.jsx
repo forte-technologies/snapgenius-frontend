@@ -15,8 +15,8 @@ export const AuthProvider = ({ children }) => {
                 const response = await apiClient.get(ENDPOINTS.AUTH.CHECK);
                 setUser(response.data);
                 setError(null);
-            } catch (error) {
-                console.log('Initial auth check failed, trying token endpoint...');
+            } catch (err) {
+                console.log('Initial auth check failed, trying token endpoint...', err);
                 
                 // If we have a token stored but cookie failed, try to get a refreshed session
                 if (getStoredToken()) {
@@ -44,7 +44,8 @@ export const AuthProvider = ({ children }) => {
             }
         };
 
-        checkAuth();
+        // Wait a short period before checking auth to allow code exchange to complete
+        setTimeout(checkAuth, 300);
     }, []);
 
     // Login function - redirect to Google OAuth
