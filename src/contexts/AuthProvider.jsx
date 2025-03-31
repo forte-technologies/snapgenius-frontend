@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ENDPOINTS, apiClient } from '../config/api';
+import { ENDPOINTS, apiClient, getStoredToken, setStoredToken, clearStoredToken } from '../config/api';
 import { AuthContext } from './useAuth';
 
 export const AuthProvider = ({ children }) => {
@@ -11,13 +11,34 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const checkAuth = async () => {
             try {
+                // First try with cookies/stored token
                 const response = await apiClient.get(ENDPOINTS.AUTH.CHECK);
                 setUser(response.data);
                 setError(null);
             } catch (error) {
-                console.log('Not authenticated', error);
-                setUser(null);
-                setError('Authentication failed');
+                console.log('Initial auth check failed, trying token endpoint...');
+                
+                // If we have a token stored but cookie failed, try to get a refreshed session
+                if (getStoredToken()) {
+                    try {
+                        // Get a fresh token using the stored one (via Authorization header)
+                        const tokenResponse = await apiClient.get(ENDPOINTS.AUTH.TOKEN);
+                        setStoredToken(tokenResponse.data.token);
+                        
+                        // Try auth check again
+                        const refreshedResponse = await apiClient.get(ENDPOINTS.AUTH.CHECK);
+                        setUser(refreshedResponse.data);
+                        setError(null);
+                    } catch (tokenError) {
+                        console.error('Token refresh failed', tokenError);
+                        clearStoredToken();
+                        setUser(null);
+                        setError('Authentication failed');
+                    }
+                } else {
+                    setUser(null);
+                    setError('Authentication failed');
+                }
             } finally {
                 setLoading(false);
             }
@@ -35,6 +56,7 @@ export const AuthProvider = ({ children }) => {
     const logout = async () => {
         try {
             await apiClient.post(ENDPOINTS.AUTH.LOGOUT);
+            clearStoredToken();
             setUser(null);
             return true;
         } catch (error) {
