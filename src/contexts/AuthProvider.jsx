@@ -1,63 +1,21 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { ENDPOINTS, apiClient } from '../config/api';
 import { AuthContext } from './useAuth';
-
-// Token storage key
-const TOKEN_STORAGE_KEY = 'mygenius_auth_token';
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Process and store token
-    const processToken = useCallback((token) => {
-        // Store token in sessionStorage
-        sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
-        // Update axios default headers
-        apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    }, []);
-
     // Check if user is authenticated on initial load
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                // Check if we have a token in sessionStorage
-                const token = sessionStorage.getItem(TOKEN_STORAGE_KEY);
-                
-                if (!token) {
-                    setUser(null);
-                    setLoading(false);
-                    return;
-                }
-                
-                // Set token in header for subsequent requests
-                apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-                
-                // Validate token with backend
-                try {
-                    const validationResponse = await apiClient.post(
-                        ENDPOINTS.AUTH.VALIDATE_TOKEN, 
-                        { token }
-                    );
-                    
-                    // If token was refreshed, update storage
-                    if (validationResponse.data.tokenRefreshed && validationResponse.data.token) {
-                        processToken(validationResponse.data.token);
-                    }
-                    
-                    setUser(validationResponse.data);
-                    setError(null);
-                } catch (validationError) {
-                    console.error('Token validation failed', validationError);
-                    // Clear invalid token
-                    sessionStorage.removeItem(TOKEN_STORAGE_KEY);
-                    delete apiClient.defaults.headers.common['Authorization'];
-                    setUser(null);
-                    setError('Session expired');
-                }
+                const response = await apiClient.get(ENDPOINTS.AUTH.CHECK);
+                setUser(response.data);
+                setError(null);
             } catch (error) {
-                console.error('Auth check failed', error);
+                console.log('Not authenticated', error);
                 setUser(null);
                 setError('Authentication failed');
             } finally {
@@ -66,7 +24,7 @@ export const AuthProvider = ({ children }) => {
         };
 
         checkAuth();
-    }, [processToken]);
+    }, []);
 
     // Login function - redirect to Google OAuth
     const login = () => {
@@ -77,10 +35,6 @@ export const AuthProvider = ({ children }) => {
     const logout = async () => {
         try {
             await apiClient.post(ENDPOINTS.AUTH.LOGOUT);
-            // Clear token from sessionStorage
-            sessionStorage.removeItem(TOKEN_STORAGE_KEY);
-            // Remove auth header
-            delete apiClient.defaults.headers.common['Authorization'];
             setUser(null);
             return true;
         } catch (error) {
@@ -109,7 +63,6 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         refreshUser,
-        processToken,
         isAuthenticated: !!user
     };
 
