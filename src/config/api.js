@@ -8,6 +8,7 @@ export const ENDPOINTS = {
         CHECK: `${API_BASE_URL}/api/auth/me`,
         LOGIN: `${API_BASE_URL}/oauth2/authorization/google`,
         LOGOUT: `${API_BASE_URL}/api/auth/logout`,
+        VALIDATE_TOKEN: `${API_BASE_URL}/api/auth/validate-token`,
     },
     USER: {
         PROFILE: `${API_BASE_URL}/api/user/profile`,
@@ -23,7 +24,7 @@ export const ENDPOINTS = {
 
 export const apiClient = axios.create({
     baseURL: API_BASE_URL,
-    withCredentials: true,
+    withCredentials: false,
 });
 
 export default { ENDPOINTS, apiClient };
