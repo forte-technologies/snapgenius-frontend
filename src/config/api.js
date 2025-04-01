@@ -1,12 +1,13 @@
+// src/config/api.js
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mygenius-f1dc97d5ca0f.herokuapp.com';
+const API_BASE_URL =
+    import.meta.env.VITE_API_URL || "http://localhost:7070";
 
 export const ENDPOINTS = {
     AUTH: {
         CHECK: `${API_BASE_URL}/api/auth/me`,
         LOGIN: `${API_BASE_URL}/oauth2/authorization/google`,
-        LOGOUT: `${API_BASE_URL}/api/auth/logout`,
     },
     USER: {
         PROFILE: `${API_BASE_URL}/api/user/profile`,
@@ -17,12 +18,22 @@ export const ENDPOINTS = {
     CHAT: {
         RAG: `${API_BASE_URL}/api/user/chat/rag`,
     },
-    // Add more endpoint categories as needed
 };
 
 export const apiClient = axios.create({
     baseURL: API_BASE_URL,
-    withCredentials: true,
 });
+
+// Add a request interceptor to attach the token automatically
+apiClient.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem("access_token");
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
 
 export default { ENDPOINTS, apiClient };

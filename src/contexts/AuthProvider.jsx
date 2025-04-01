@@ -1,52 +1,67 @@
+// src/contexts/AuthProvider.js
 import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ENDPOINTS, apiClient } from '../config/api';
 import { AuthContext } from './useAuth';
 
-export const AuthProvider = ({ children }) => {
+const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const location = useLocation();
+    const navigate = useNavigate();
 
-    // Check if user is authenticated on initial load
     useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                const response = await apiClient.get(ENDPOINTS.AUTH.CHECK);
-                setUser(response.data);
-                setError(null);
-            } catch (error) {
-                console.log('Not authenticated', error);
-                setUser(null);
-                setError('Authentication failed');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        checkAuth();
+        const urlParams = new URLSearchParams(location.search);
+        const tokenFromUrl = urlParams.get('token');
+        if (tokenFromUrl) {
+            localStorage.setItem('access_token', tokenFromUrl);
+            // Remove token from URL
+            navigate(location.pathname, { replace: true });
+        }
+        const token = localStorage.getItem('access_token');
+        if (token) {
+            fetchUser(token);
+        } else {
+            setLoading(false);
+        }
     }, []);
 
-    // Login function - redirect to Google OAuth
-    const login = () => {
-        window.location.href = ENDPOINTS.AUTH.LOGIN;
-    };
-
-    // Logout function
-    const logout = async () => {
+    const fetchUser = async (token) => {
         try {
-            await apiClient.post(ENDPOINTS.AUTH.LOGOUT);
-            setUser(null);
-            return true;
+            const response = await apiClient.get(ENDPOINTS.AUTH.CHECK, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setUser(response.data);
+            setError(null);
         } catch (error) {
-            console.error('Error during logout', error);
-            return false;
+            console.error('Not authenticated', error);
+            setUser(null);
+            setError('Authentication failed');
+            localStorage.removeItem('access_token');
+        } finally {
+            setLoading(false);
         }
     };
 
-    // Refresh user data
+    const login = () => {
+        // Redirect to backend OAuth2 endpoint
+        window.location.href = ENDPOINTS.AUTH.LOGIN;
+    };
+
+    const logout = async () => {
+        localStorage.removeItem('access_token');
+        setUser(null);
+        return true;
+    };
+
     const refreshUser = async () => {
+        const token = localStorage.getItem('access_token');
+        if (!token) throw new Error('No token');
         try {
-            const response = await apiClient.get(ENDPOINTS.AUTH.CHECK);
+            const response = await apiClient.get(ENDPOINTS.AUTH.CHECK, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
             setUser(response.data);
             return response.data;
         } catch (error) {
@@ -55,7 +70,6 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // Context value
     const value = {
         user,
         loading,
@@ -63,7 +77,8 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         refreshUser,
-        isAuthenticated: !!user
+        isAuthenticated: !!user,
+        accessToken: localStorage.getItem('access_token'),
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

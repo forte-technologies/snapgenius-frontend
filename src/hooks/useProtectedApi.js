@@ -1,35 +1,20 @@
 // src/hooks/useProtectedApi.js
 import { useCallback } from "react";
 import { useAuth } from "../contexts/useAuth";
-import apiClient from "../config/api"; // Import the configured axios instance
+import apiClient from "../config/api";
 
 export const useProtectedApi = () => {
-    const { accessToken, logout, refreshAccessToken } = useAuth();
+    const { accessToken, logout, refreshUser } = useAuth();
 
     const callApi = useCallback(
         async (endpoint, options = {}) => {
-            let token = accessToken;
-
-            // If no token is in state, try to get it from localStorage or refresh
+            let token = accessToken || localStorage.getItem("access_token");
             if (!token) {
-                token = localStorage.getItem("access_token");
-                if (!token) {
-                    try {
-                        await refreshAccessToken();
-                        token = localStorage.getItem("access_token");
-                        if (!token) {
-                            logout();
-                            throw new Error("Authentication required");
-                        }
-                    } catch (error) {
-                        logout();
-                        throw new Error("Authentication required");
-                    }
-                }
+                logout();
+                throw new Error("Authentication required");
             }
 
             try {
-                // Use the apiClient instance from api.js
                 const response = await apiClient({
                     url: endpoint,
                     ...options,
@@ -39,8 +24,7 @@ export const useProtectedApi = () => {
                         "Content-Type": "application/json",
                     },
                 });
-
-                return response; // The interceptor in api.js ensures it's already parsed
+                return response;
             } catch (err) {
                 console.error("API call failed:", err);
                 if (
@@ -49,7 +33,7 @@ export const useProtectedApi = () => {
                     err.message.includes("Authentication")
                 ) {
                     try {
-                        await refreshAccessToken();
+                        await refreshUser();
                         return callApi(endpoint, options);
                     } catch (refreshError) {
                         logout();
@@ -59,7 +43,7 @@ export const useProtectedApi = () => {
                 throw err;
             }
         },
-        [accessToken, logout, refreshAccessToken]
+        [accessToken, logout, refreshUser]
     );
 
     return { callApi };

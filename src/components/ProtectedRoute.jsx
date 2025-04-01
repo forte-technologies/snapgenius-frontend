@@ -2,7 +2,7 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/useAuth';
 
-export const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children }) => {
     const { isAuthenticated, loading } = useAuth();
 
     if (loading) {
@@ -18,7 +18,6 @@ export const ProtectedRoute = ({ children }) => {
         return <Navigate to="/" replace />;
     }
 
-    // If using React Router v6's new Outlet context
     return children || <Outlet />;
 };
 

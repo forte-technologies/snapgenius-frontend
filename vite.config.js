@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     allowedHosts: ['2ee257c68587.ngrok.app'],
-    port: 5174,
+    port: 5175,
     historyApiFallback: true, // Add this line
   }
 })
