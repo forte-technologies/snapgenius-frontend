@@ -49,42 +49,47 @@ const ImageUploader = ({ onUploadSuccess }) => {
     };
 
     return (
-        <div className="image-uploader" style={{ marginBottom: '2rem', padding: '1rem', border: '1px dashed #ccc', borderRadius: '8px' }}>
-            <h3>Upload Image</h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem' }}>
-                <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    disabled={isLoading}
-                    style={{ flex: 1 }}
-                />
-                <button
-                    onClick={handleUpload}
-                    disabled={!selectedFile || isLoading}
-                    style={{
-                        backgroundColor: '#4caf50',
-                        color: 'white',
-                        border: 'none',
-                        padding: '8px 16px',
-                        borderRadius: '4px',
-                        cursor: selectedFile && !isLoading ? 'pointer' : 'not-allowed',
-                        opacity: selectedFile && !isLoading ? 1 : 0.7
-                    }}
-                >
-                    {isLoading ? 'Uploading...' : 'Upload'}
-                </button>
+        <div className="w-full border border-dashed border-zinc-300 rounded-xl p-4 mb-4">
+            <div className="flex flex-col gap-3">
+                <label className="flex flex-col items-center justify-center w-full cursor-pointer">
+                    <div className="w-full flex flex-col md:flex-row items-center gap-3">
+                        <div className="flex-1 w-full">
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileChange}
+                                disabled={isLoading}
+                                className="w-full text-sm text-zinc-500 file:mr-3 file:py-2 file:px-4 file:border-0 file:text-xs file:font-medium file:bg-zinc-50 file:text-zinc-700 hover:file:cursor-pointer hover:file:bg-zinc-100 rounded-lg"
+                            />
+                        </div>
+                        
+                        <button
+                            onClick={handleUpload}
+                            disabled={!selectedFile || isLoading}
+                            className={`w-full md:w-auto px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                selectedFile && !isLoading
+                                    ? 'bg-[#10a37f] text-white hover:bg-[#0e8f6e]'
+                                    : 'bg-zinc-100 text-zinc-400 cursor-not-allowed'
+                            }`}
+                        >
+                            {isLoading ? 'Uploading...' : 'Upload'}
+                        </button>
+                    </div>
+                </label>
+                
+                {selectedFile && (
+                    <div className="text-xs text-zinc-600 bg-zinc-50 rounded-lg p-2 flex justify-between items-center">
+                        <span className="truncate">{selectedFile.name}</span>
+                        <span className="text-zinc-400 ml-2 whitespace-nowrap">({Math.round(selectedFile.size / 1024)} KB)</span>
+                    </div>
+                )}
+                
+                {error && (
+                    <div className="text-xs text-red-500 bg-red-50 p-2 rounded-lg">
+                        {error}
+                    </div>
+                )}
             </div>
-            {selectedFile && (
-                <div style={{ marginBottom: '0.75rem' }}>
-                    <p>Selected: {selectedFile.name} ({Math.round(selectedFile.size / 1024)} KB)</p>
-                </div>
-            )}
-            {error && (
-                <div style={{ color: 'red', marginTop: '0.5rem' }}>
-                    {error}
-                </div>
-            )}
         </div>
     );
 };
