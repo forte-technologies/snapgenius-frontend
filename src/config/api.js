@@ -1,8 +1,15 @@
 // src/config/api.js
 import axios from "axios";
 
+
 const API_BASE_URL =
     import.meta.env.VITE_API_URL || "https://mygenius-f1dc97d5ca0f.herokuapp.com";
+
+
+// Chat microservice URL - defaults to localhost in dev, can be overridden with env var
+const CHAT_MICROSERVICE_URL =
+    import.meta.env.VITE_CHAT_MICROSERVICE_URL || "http://localhost:7050";
+
 
 export const ENDPOINTS = {
     AUTH: {
@@ -17,12 +24,16 @@ export const ENDPOINTS = {
     },
     CHAT: {
         RAG: `${API_BASE_URL}/api/user/chat/rag`,
+        TOKEN: `${API_BASE_URL}/api/user/chat/token/token`,
+        STREAM: `${CHAT_MICROSERVICE_URL}/api/chat/stream`,
     },
 };
+
 
 export const apiClient = axios.create({
     baseURL: API_BASE_URL,
 });
+
 
 // Add a request interceptor to attach the token automatically
 apiClient.interceptors.request.use(
@@ -36,4 +47,6 @@ apiClient.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
+
 export default { ENDPOINTS, apiClient };
+

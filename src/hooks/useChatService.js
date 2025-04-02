@@ -1,12 +1,13 @@
-// src/hooks/useChatService.js
 import { useState, useEffect, useCallback } from 'react';
 import { ENDPOINTS, apiClient } from '../config/api';
+
 
 export const useChatService = () => {
     const [chatToken, setChatToken] = useState(null);
     const [isStreaming, setIsStreaming] = useState(true);
     const [tokenLoading, setTokenLoading] = useState(false);
     const [tokenError, setTokenError] = useState(null);
+
 
     // Fetch chat token on mount
     useEffect(() => {
@@ -15,12 +16,15 @@ export const useChatService = () => {
         }
     }, [isStreaming]);
 
+
     // Fetch chat token
     const fetchChatToken = useCallback(async () => {
         if (tokenLoading || chatToken) return;
 
+
         setTokenLoading(true);
         setTokenError(null);
+
 
         try {
             const response = await apiClient.get(ENDPOINTS.CHAT.TOKEN);
@@ -34,11 +38,13 @@ export const useChatService = () => {
         }
     }, [chatToken, tokenLoading]);
 
+
     // Send message with streaming
     const sendStreamingMessage = useCallback(async (message) => {
         if (!chatToken) {
             throw new Error('Chat token not available');
         }
+
 
         // Create a response handler that emits chunks as they arrive
         const streamHandler = async (onChunk, onComplete, onError) => {
@@ -52,24 +58,30 @@ export const useChatService = () => {
                     body: JSON.stringify({ message })
                 });
 
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
+
 
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let fullMessage = '';
 
+
                 while (true) {
                     const { done, value } = await reader.read();
+
 
                     if (done) {
                         onComplete(fullMessage);
                         break;
                     }
 
+
                     const chunk = decoder.decode(value, { stream: true });
                     const lines = chunk.split('\n').filter(line => line.trim() !== '');
+
 
                     for (const line of lines) {
                         if (line.startsWith('data: ')) {
@@ -82,6 +94,7 @@ export const useChatService = () => {
             } catch (error) {
                 onError(error);
 
+
                 // Handle token expiration
                 if (error.message.includes('401')) {
                     setChatToken(null);
@@ -90,14 +103,17 @@ export const useChatService = () => {
             }
         };
 
+
         return streamHandler;
     }, [chatToken, fetchChatToken]);
+
 
     // Send message without streaming
     const sendRegularMessage = useCallback(async (message) => {
         const response = await apiClient.post(ENDPOINTS.CHAT.RAG, { message });
         return response.data.response;
     }, []);
+
 
     // Toggle streaming mode
     const toggleStreaming = useCallback(() => {
@@ -110,6 +126,7 @@ export const useChatService = () => {
             return newValue;
         });
     }, [chatToken, fetchChatToken]);
+
 
     return {
         chatToken,
@@ -124,4 +141,6 @@ export const useChatService = () => {
     };
 };
 
+
 export default useChatService;
+
