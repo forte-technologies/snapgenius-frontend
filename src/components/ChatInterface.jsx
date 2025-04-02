@@ -219,7 +219,7 @@ const ChatInterface = () => {
                             cursor: 'pointer'
                         }}
                     >
-                        {useStreaming ? 'Streaming On' : 'Streaming Off'}
+                        {useStreaming ? 'High Speed Chat On' : 'High Speed Chat Off'}
                     </button>
                 </div>
             </div>
