@@ -2,6 +2,8 @@
 
 myGenius is a Progressive Web Application (PWA) that allows users to upload images and chat with an AI assistant about the content of those images. The application features a modern iOS-inspired user interface, Google authentication, and is optimized for both desktop and mobile devices.
 
+app can be used and downloaded at https://mygenius.netlify.app/
+
 ## Features
 
 - **Progressive Web App**: Installable on devices with offline capabilities
