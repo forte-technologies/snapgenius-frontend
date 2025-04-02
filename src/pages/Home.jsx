@@ -24,10 +24,10 @@ function Home() {
                 
                 <button
                     onClick={login}
-                    className="flex items-center justify-center gap-2 w-full rounded-full border border-zinc-300 bg-zinc-50 py-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 hover:shadow transition"
+                    className="flex items-center justify-center gap-2 w-full rounded-full border border-zinc-300 bg-zinc-50 py-3 text-sm font-medium  hover:bg-zinc-100 hover:shadow transition"
                 >
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="h-5 w-5" />
-                    <span>Continue with Google</span>
+                    <img src="/icons/web_neutral_rd_ctn@1x.png" alt="Google"  />
+
                 </button>
                 
                 <div className="mt-12 flex justify-center space-x-4">
