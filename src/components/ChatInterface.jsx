@@ -196,7 +196,7 @@ const ChatInterface = () => {
                 justifyContent: 'space-between',
                 alignItems: 'center'
             }}>
-                <h3 style={{ margin: 0 }}>Chat with My Genius</h3>
+                <h3 style={{ margin: 0 }}>Chat with snapGenius</h3>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <div
                         style={{

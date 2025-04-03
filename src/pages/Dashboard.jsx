@@ -33,7 +33,7 @@ function Dashboard() {
         <div className="flex flex-col min-h-screen bg-[#f9f9fa]">
             {/* iOS-styled status bar for mobile */}
             <div className="h-[44px] bg-white/80 backdrop-blur-md shadow-sm fixed top-0 left-0 right-0 z-10 flex items-center justify-between px-4 md:hidden">
-                <h1 className="font-['Plus_Jakarta_Sans'] font-light text-zinc-800">myGenius</h1>
+                <h1 className="font-['Plus_Jakarta_Sans'] font-light text-zinc-800">snapGenius</h1>
                 <button 
                     onClick={handleLogout}
                     className="text-xs font-medium text-[#10a37f]"
@@ -46,7 +46,7 @@ function Dashboard() {
             <div className="flex-1 w-full max-w-3xl mx-auto px-4 pt-[56px] pb-20 md:py-6 md:px-6">
                 {/* Header with logo and logout (visible only on desktop) */}
                 <header className="flex justify-between items-center py-4 md:py-6">
-                    <h1 className="font-['Plus_Jakarta_Sans'] text-xl font-medium md:text-2xl text-zinc-800 hidden md:block">myGenius</h1>
+                    <h1 className="font-['Plus_Jakarta_Sans'] text-xl font-medium md:text-2xl text-zinc-800 hidden md:block">snapGenius</h1>
                     <button
                         onClick={handleLogout}
                         className="hidden md:block text-sm font-medium px-4 py-2 rounded-full bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 transition shadow-sm"
