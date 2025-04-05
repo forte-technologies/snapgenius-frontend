@@ -107,7 +107,7 @@ const TermsOfService = () => {
                 
                 {/* Footer */}
                 <div className="mt-8 text-center text-sm text-gray-500">
-                    <p>© {new Date().getFullYear()} Forte Technologies, Inc. All rights reserved.</p>
+                    <p>© {new Date().getFullYear()} Forte Technologies LLC. All rights reserved.</p>
                 </div>
             </div>
         </div>

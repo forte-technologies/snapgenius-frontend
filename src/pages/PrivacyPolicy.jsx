@@ -116,7 +116,7 @@ const PrivacyPolicy = () => {
                             <h2 className="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2 mb-4">11. Contact</h2>
                             <p className="mb-4">For questions or concerns:</p>
                             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                <p className="font-medium text-gray-700">Forte Technologies, Inc.</p>
+                                <p className="font-medium text-gray-700">Forte Technologies LLC</p>
                                 <p className="text-[#10a37f]">Email: <a href="mailto:team@fortetechnologies.io" className="hover:underline">team@fortetechnologies.io</a></p>
                             </div>
                         </section>
