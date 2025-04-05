@@ -3,6 +3,7 @@ import AuthProvider from './contexts/AuthProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
+import Uploads from './pages/Uploads';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 
@@ -18,6 +19,14 @@ function App() {
                     element={
                         <ProtectedRoute>
                             <Dashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/uploads"
+                    element={
+                        <ProtectedRoute>
+                            <Uploads />
                         </ProtectedRoute>
                     }
                 />

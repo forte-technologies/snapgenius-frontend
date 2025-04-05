@@ -21,6 +21,7 @@ export const ENDPOINTS = {
     },
     IMAGES: {
         UPLOAD: `${API_BASE_URL}/api/user/images`,
+        FILE_NAMES:`${API_BASE_URL}/api/user/images/imageFileNames`
     },
     CHAT: {
         RAG: `${API_BASE_URL}/api/user/chat/rag`,
