@@ -11,6 +11,7 @@ const ChatInterface = () => {
     const [useStreaming, setUseStreaming] = useState(true);
     const [chatToken, setChatToken] = useState(null);
     const [streamingMessage, setStreamingMessage] = useState('');
+    const [selectedAssistant, setSelectedAssistant] = useState('rag'); // 'rag' or 'general'
     const messagesEndRef = useRef(null);
 
 
@@ -105,14 +106,26 @@ const ChatInterface = () => {
     const handleStreamingChat = async (message) => {
         setStreamingMessage('');
 
+        // Choose the correct endpoint based on selected assistant
+        let endpoint;
+        let headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${chatToken}` // Both endpoints now use chat token
+        };
+        
+        // Set appropriate endpoints - both now use microservice
+        if (selectedAssistant === 'rag') {
+            // Image Chat uses microservice endpoint
+            endpoint = ENDPOINTS.CHAT.MICRO_STRICT_RAG_STREAM;
+        } else {
+            // General Chat now also uses microservice endpoint
+            endpoint = ENDPOINTS.CHAT.MICRO_GENERAL_STREAM;
+        }
 
         try {
-            const response = await fetch(ENDPOINTS.CHAT.STREAM, {
+            const response = await fetch(endpoint, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${chatToken}`
-                },
+                headers: headers,
                 body: JSON.stringify({ message: message })
             });
 
@@ -193,33 +206,78 @@ const ChatInterface = () => {
                 backgroundColor: '#f5f5f5',
                 borderBottom: '1px solid #e0e0e0',
                 display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
+                flexDirection: 'column',
+                gap: '0.5rem'
             }}>
-                <h3 style={{ margin: 0 }}>Chat with snapGenius</h3>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div
-                        style={{
-                            width: '10px',
-                            height: '10px',
-                            borderRadius: '50%',
-                            backgroundColor: useStreaming && chatToken ? '#4caf50' : '#f44336',
-                            display: 'inline-block'
-                        }}
-                        title={useStreaming && chatToken ? 'Streaming enabled' : 'Streaming disabled'}
-                    />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3 style={{ margin: 0 }}>Chat with snapGenius</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div
+                            style={{
+                                width: '10px',
+                                height: '10px',
+                                borderRadius: '50%',
+                                backgroundColor: useStreaming && chatToken ? '#4caf50' : '#f44336',
+                                display: 'inline-block'
+                            }}
+                            title={useStreaming && chatToken ? 'Streaming enabled' : 'Streaming disabled'}
+                        />
+                        <button
+                            onClick={toggleStreamingMode}
+                            style={{
+                                fontSize: '0.7rem',
+                                padding: '2px 6px',
+                                backgroundColor: useStreaming ? '#e3f2fd' : '#f5f5f5',
+                                border: '1px solid #e0e0e0',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            {useStreaming ? 'High Speed Chat On' : 'High Speed Chat Off'}
+                        </button>
+                    </div>
+                </div>
+                
+                {/* Assistant Type Toggle */}
+                <div style={{ 
+                    display: 'flex', 
+                    backgroundColor: '#e0e0e0', 
+                    borderRadius: '4px', 
+                    padding: '2px' 
+                }}>
                     <button
-                        onClick={toggleStreamingMode}
+                        onClick={() => setSelectedAssistant('rag')}
                         style={{
-                            fontSize: '0.7rem',
-                            padding: '2px 6px',
-                            backgroundColor: useStreaming ? '#e3f2fd' : '#f5f5f5',
-                            border: '1px solid #e0e0e0',
-                            borderRadius: '4px',
-                            cursor: 'pointer'
+                            flex: 1,
+                            padding: '4px 8px',
+                            fontSize: '0.75rem',
+                            fontWeight: 'medium',
+                            backgroundColor: selectedAssistant === 'rag' ? 'white' : 'transparent',
+                            color: selectedAssistant === 'rag' ? '#2196f3' : '#555',
+                            border: 'none',
+                            borderRadius: '3px',
+                            cursor: 'pointer',
+                            boxShadow: selectedAssistant === 'rag' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none'
                         }}
                     >
-                        {useStreaming ? 'High Speed Chat On' : 'High Speed Chat Off'}
+                        Image Chat
+                    </button>
+                    <button
+                        onClick={() => setSelectedAssistant('general')}
+                        style={{
+                            flex: 1,
+                            padding: '4px 8px',
+                            fontSize: '0.75rem',
+                            fontWeight: 'medium',
+                            backgroundColor: selectedAssistant === 'general' ? 'white' : 'transparent',
+                            color: selectedAssistant === 'general' ? '#2196f3' : '#555',
+                            border: 'none',
+                            borderRadius: '3px',
+                            cursor: 'pointer',
+                            boxShadow: selectedAssistant === 'general' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none'
+                        }}
+                    >
+                        General Chat
                     </button>
                 </div>
             </div>
@@ -237,7 +295,10 @@ const ChatInterface = () => {
                         color: '#888',
                         margin: 'auto 0'
                     }}>
-                        <p>Start a conversation about your uploaded images!</p>
+                        <p>{selectedAssistant === 'rag' 
+                          ? 'Start a conversation about your uploaded images!' 
+                          : 'Ask me anything! I\'m your general assistant.'}
+                        </p>
                     </div>
                 ) : (
                     messages.map(message => (
@@ -281,13 +342,11 @@ const ChatInterface = () => {
                             padding: '0.75rem 1rem',
                             borderRadius: '1rem',
                             borderBottomLeftRadius: '0.25rem',
-                            // Add these properties:
                             wordBreak: 'break-word'  // Ensures words wrap properly
                         }}
                     >
                         <div className="message-text" style={{
                             whiteSpace: 'pre-wrap',
-                            // Add this property:
                             wordBreak: 'break-word'  // Ensures words wrap properly
                         }}>
                             {streamingMessage}
@@ -327,7 +386,9 @@ const ChatInterface = () => {
                     type="text"
                     value={inputMessage}
                     onChange={handleInputChange}
-                    placeholder="Ask about your images..."
+                    placeholder={selectedAssistant === 'rag' 
+                        ? "Ask about your images..." 
+                        : "Ask me anything..."}
                     disabled={isLoading}
                     style={{
                         flex: 1,
@@ -353,11 +414,7 @@ const ChatInterface = () => {
                     {isLoading ? 'Sending...' : 'Send'}
                 </button>
             </form>
-
-
         </div>
-
-
     );
 };
 

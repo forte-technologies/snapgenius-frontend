@@ -26,6 +26,9 @@ export const ENDPOINTS = {
         RAG: `${API_BASE_URL}/api/user/chat/rag`,
         TOKEN: `${API_BASE_URL}/api/user/chat/token/token`,
         STREAM: `${CHAT_MICROSERVICE_URL}/api/chat/stream`,
+        MICRO_GENERAL_STREAM: `${CHAT_MICROSERVICE_URL}/api/chat/stream/general`,
+        MICRO_STRICT_RAG_STREAM: `${CHAT_MICROSERVICE_URL}/api/chat/stream/rag`,
+        MAINAPP_GENERAL_RAG: `${API_BASE_URL}/api/user/chat/generalRag`
     },
 };
 
