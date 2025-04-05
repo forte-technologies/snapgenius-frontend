@@ -21,7 +21,7 @@ function Home() {
                 </div>
                 
                 <p className="mb-8 text-sm text-zinc-600 px-4 sm:px-0">
-                    myGenius is your personal AI assistant. Snap photos of notes, receipts, anything — it extracts, stores, and retrieves information instantly when you need it.
+                    snapGenius is your personal AI assistant. Snap photos of notes, receipts, anything — it extracts, stores, and retrieves information instantly when you need it.
                 </p>
                 
                 <button
@@ -33,11 +33,11 @@ function Home() {
                 </button>
                 
                 <div className="mt-12 flex justify-center space-x-4">
-                    <a href="#" className="text-xs text-[#10a37f] hover:underline">
+                    <a href="/terms-of-service" className="text-xs text-[#10a37f] hover:underline">
                         Terms of Use
                     </a>
                     <span className="text-xs text-gray-500">|</span>
-                    <a href="#" className="text-xs text-[#10a37f] hover:underline">
+                    <a href="/privacy-policy" className="text-xs text-[#10a37f] hover:underline">
                         Privacy Policy
                     </a>
                 </div>
