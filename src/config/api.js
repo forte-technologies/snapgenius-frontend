@@ -3,7 +3,7 @@ import axios from "axios";
 
 
 const API_BASE_URL =
-    import.meta.env.VITE_API_URL || "https://server.snapgenius.app/";
+    import.meta.env.VITE_API_URL || "https://server.snapgenius.app";
 
 
 // Chat microservice URL - defaults to localhost in dev, can be overridden with env var
