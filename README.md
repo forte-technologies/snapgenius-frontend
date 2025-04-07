@@ -1,53 +1,18 @@
-# myGenius - AI-Powered Image Analysis PWA
+# snapGenius - AI-Powered Image Analysis PWA
 
-myGenius is a Progressive Web Application (PWA) that allows users to upload images and chat with an AI assistant about the content of those images. The application features a modern iOS-inspired user interface, Google authentication, and is optimized for both desktop and mobile devices.
+SnapGenius is a Progressive Web Application (PWA) that empowers users to upload unlimited images and documents. These uploads are converted into vector embeddings using OpenAI's embedding model, creating a searchable knowledge base.
+The application features a retrieval-augmented generation chatbot. When users submit queries, the backend performs a similarity search against their uploaded content, retrieving the 5-6 most relevant documents or images as context for generating accurate, personalized responses.
+This approach allows users to effectively interact with large volumes of their own data, as the system intelligently selects only the most relevant information needed to answer each specific query.
 
-app can be used and downloaded at https://mygenius.netlify.app/
-
-## Features
-
-- **Progressive Web App**: Installable on devices with offline capabilities
-- **Google Authentication**: Secure sign-in with Google OAuth 2.0
-- **Image Upload**: Upload and manage images for AI analysis
-- **AI Chat Interface**: Ask questions about uploaded images and receive AI-powered responses
-- **Responsive Design**: iOS-inspired UI that works seamlessly on mobile and desktop
-- **Modern UX**: Clean, intuitive interface with subtle animations and transitions
+app can be used and downloaded at https://snapgenius.app/
 
 ## Technology Stack
 
-- **Frontend**: React 19 with Vite
-- **Styling**: TailwindCSS v4 with custom iOS-inspired design
-- **Routing**: React Router v7
-- **State Management**: React Context API
+- **Frontend**: React with Vite
+- **Backend**: Spring Boot
 - **HTTP Client**: Axios
 - **Authentication**: OAuth 2.0 with JWT tokens
 - **PWA Support**: vite-plugin-pwa
-
-## Project Structure
-
-```
-mygenius-frontend/
-├── public/                   # Static assets
-│   ├── icons/                # App icons for various platforms
-│   └── vite.svg              # Vite logo
-├── src/                      # Source code
-│   ├── assets/               # Images, fonts, and other static assets
-│   ├── components/           # Reusable React components
-│   ├── config/               # Configuration files
-│   ├── contexts/             # React contexts for state management
-│   ├── hooks/                # Custom React hooks
-│   ├── pages/                # Page components
-│   ├── App.jsx               # Main application component
-│   ├── App.css               # Global CSS
-│   ├── main.jsx              # Application entry point
-│   └── index.css             # Global styles and Tailwind imports
-├── .env.development          # Development environment variables
-├── index.html                # HTML entry point
-├── vite.config.js            # Vite configuration
-└── package.json              # Project dependencies and scripts
-```
-
-## Key Files Explained
 
 ### Core Application Files
 
@@ -106,9 +71,6 @@ The frontend communicates with a Spring Boot backend API deployed on Heroku. Key
 ### Installation
 
 1. Clone the repository
-```bash
-git clone https://github.com/yourusername/mygenius-frontend.git
-cd mygenius-frontend
 ```
 
 2. Install dependencies
@@ -119,7 +81,7 @@ npm install
 3. Configure environment variables
 Create a `.env.local` file in the root directory with:
 ```
-VITE_API_URL=your_backend_api_url
+VITE_API_URL=your_backend_api_url (https://github.com/forte-technologies/snapgenius-server)
 ```
 
 4. Start the development server
@@ -134,25 +96,10 @@ npm run build
 
 ## Deployment
 
-The application can be deployed to any static hosting service like Vercel, Netlify, or GitHub Pages.
+The application can be deployed to any static hosting service like Vercel, or Netlify.
 
 ```bash
 npm run build
 # Deploy the contents of the dist/ directory
 ```
 
-## Browser Support
-
-The application supports modern browsers including:
-- Chrome/Edge (desktop and mobile)
-- Safari (desktop and mobile)
-- Firefox (desktop and mobile)
-
-## License
-
-[MIT License](LICENSE)
-
-## Acknowledgements
-
-- Design inspired by iOS user interface guidelines
-- Icons from [Heroicons](https://heroicons.com/)
