@@ -23,6 +23,9 @@ export const ENDPOINTS = {
         UPLOAD: `${API_BASE_URL}/api/user/images`,
         FILE_NAMES:`${API_BASE_URL}/api/user/images/imageFileNames`
     },
+    DOCUMENTS: {
+      UPLOAD:`${API_BASE_URL}/api/user/documents`
+    },
     CHAT: {
         RAG: `${API_BASE_URL}/api/user/chat/rag`,
         TOKEN: `${API_BASE_URL}/api/user/chat/token/token`,

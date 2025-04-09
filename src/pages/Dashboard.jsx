@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/useAuth';
 import ImageUploader from '../components/ImageUploader';
+import DocumentUploader from '../components/DocumentUploader';
 import ChatInterface from '../components/ChatInterface';
 
 function Dashboard() {
@@ -90,16 +91,50 @@ function Dashboard() {
                     </div>
                 )}
 
-                {/* Image uploader section */}
-                <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] px-6 py-5 mb-6 transition-all duration-300">
-                    <h2 className="text-md font-medium text-zinc-800 mb-3">Upload Images</h2>
-                    <ImageUploader onUploadSuccess={handleUploadSuccess} />
+                {/* Sleek upload section */}
+                <div className="bg-white rounded-xl shadow-sm border border-zinc-100 mb-4">
+                    <div className="px-4 py-3 border-b border-zinc-100">
+                        <h2 className="text-sm font-medium text-zinc-800 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 mr-1.5 text-[#10a37f]">
+                                <path d="M9.25 13.25a.75.75 0 001.5 0V4.636l2.955 3.12a.75.75 0 001.09-1.03l-4.25-4.5a.75.75 0 00-1.09 0l-4.25 4.5a.75.75 0 101.09 1.03L9.25 4.636v8.614z" />
+                                <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" />
+                            </svg>
+                            Upload Files
+                        </h2>
+                    </div>
+                    
+                    <div className="divide-y divide-zinc-100">
+                        {/* Image uploader section */}
+                        <div className="px-4 py-3">
+                            <div className="flex items-center mb-2">
+                                <h3 className="text-xs font-medium text-zinc-600">Images</h3>
+                                <div className="ml-2 text-[10px] text-zinc-400 bg-zinc-50 px-1.5 py-0.5 rounded-full">JPG, PNG, GIF</div>
+                            </div>
+                            <ImageUploader onUploadSuccess={handleUploadSuccess} />
+                        </div>
+                        
+                        {/* Document uploader section */}
+                        <div className="px-4 py-3">
+                            <div className="flex items-center mb-2">
+                                <h3 className="text-xs font-medium text-zinc-600">Documents</h3>
+                                <div className="ml-2 text-[10px] text-zinc-400 bg-zinc-50 px-1.5 py-0.5 rounded-full">PDF, DOC, TXT</div>
+                            </div>
+                            <DocumentUploader onUploadSuccess={handleUploadSuccess} />
+                        </div>
+                    </div>
                 </div>
                 
                 {/* Chat section */}
-                <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] px-6 py-5 mb-20 md:mb-6 transition-all duration-300">
-                    <h2 className="text-md font-medium text-zinc-800 mb-2">Chat with Your AI Assistant</h2>
-                    <p className="text-sm text-zinc-500 mb-4">Ask questions about your uploaded images</p>
+                <div className="bg-white rounded-xl shadow-sm border border-zinc-100 px-4 py-3 mb-20 md:mb-4">
+                    <div className="mb-3">
+                        <h2 className="text-sm font-medium text-zinc-800 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 mr-1.5 text-[#10a37f]">
+                                <path fillRule="evenodd" d="M10 2c-2.236 0-4.43.18-6.57.524C1.993 2.755 1 4.014 1 5.426v5.148c0 1.413.993 2.67 2.43 2.902 1.168.188 2.352.327 3.55.414.28.02.521.18.642.413l1.713 3.293a.75.75 0 001.33 0l1.713-3.293a.783.783 0 01.642-.413 41.102 41.102 0 003.55-.414c1.437-.231 2.43-1.49 2.43-2.902V5.426c0-1.413-.993-2.67-2.43-2.902A41.289 41.289 0 0010 2zM6.75 6a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5zm0 2.5a.75.75 0 000 1.5h3.5a.75.75 0 000-1.5h-3.5z" clipRule="evenodd" />
+                            </svg>
+                            AI Assistant
+                        </h2>
+                        <p className="text-xs text-zinc-500">Ask questions about your uploaded files</p>
+                    </div>
                     <ChatInterface />
                 </div>
             </div>

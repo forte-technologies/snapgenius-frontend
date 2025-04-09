@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { ENDPOINTS, apiClient } from '../config/api';
 
-const ImageUploader = ({ onUploadSuccess }) => {
+const DocumentUploader = ({ onUploadSuccess }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -18,9 +18,10 @@ const ImageUploader = ({ onUploadSuccess }) => {
             return;
         }
 
-        // Check if file is an image
-        if (!selectedFile.type.startsWith('image/')) {
-            setError('Only image files are allowed');
+        // Check if file is a supported document type
+        const supportedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+        if (!supportedTypes.includes(selectedFile.type)) {
+            setError('Only PDF, DOC, DOCX, and TXT files are supported');
             return;
         }
 
@@ -31,25 +32,54 @@ const ImageUploader = ({ onUploadSuccess }) => {
         setError(null);
 
         try {
-            const response = await apiClient.post(ENDPOINTS.IMAGES.UPLOAD, formData, {
+            const response = await apiClient.post(ENDPOINTS.DOCUMENTS.UPLOAD, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
             });
 
             setSelectedFile(null);
+            // Reset the file input element to ensure it can be reused
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
+            
             if (onUploadSuccess) {
                 onUploadSuccess(response.data);
             }
         } catch (err) {
             console.error('Upload failed:', err);
-            setError(err.response?.data?.error || 'Failed to upload image');
+            setError(err.response?.data?.error || 'Failed to upload document');
         } finally {
             setIsLoading(false);
         }
+    };
+
+    // Get file icon based on document type
+    const getFileIcon = () => {
+        if (!selectedFile) return null;
+        
+        if (selectedFile.type === 'application/pdf') {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 mr-1.5 flex-shrink-0 text-red-500">
+                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                </svg>
+            );
+        } 
+        
+        if (selectedFile.type.includes('word')) {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 mr-1.5 flex-shrink-0 text-blue-500">
+                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                </svg>
+            );
+        }
+        
+        return (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 mr-1.5 flex-shrink-0 text-zinc-500">
+                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+            </svg>
+        );
     };
 
     return (
@@ -57,29 +87,27 @@ const ImageUploader = ({ onUploadSuccess }) => {
             {/* Upload controls */}
             <div className="flex items-center gap-2">
                 <label
-                    htmlFor="image-upload"
+                    htmlFor="document-upload"
                     className="flex-1 bg-white hover:bg-zinc-50 text-zinc-700 border border-zinc-200 py-1.5 px-3 text-xs rounded-md font-medium cursor-pointer transition-colors shadow-sm"
                 >
                     {selectedFile ? (
                         <div className="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 mr-1.5 flex-shrink-0 text-zinc-500">
-                                <path fillRule="evenodd" d="M1 8a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 018.07 3h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0016.07 6H17a2 2 0 012 2v7a2 2 0 01-2 2H3a2 2 0 01-2-2V8zm13.5 3a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM10 14a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-                            </svg>
+                            {getFileIcon()}
                             <span className="truncate">{selectedFile.name}</span>
                         </div>
                     ) : (
                         <div className="flex items-center justify-center">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 mr-1.5 text-zinc-500">
-                                <path fillRule="evenodd" d="M1 8a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 018.07 3h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0016.07 6H17a2 2 0 012 2v7a2 2 0 01-2 2H3a2 2 0 01-2-2V8zm13.5 3a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM10 14a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
                             </svg>
-                            Choose Image
+                            Choose Document
                         </div>
                     )}
                 </label>
                 <input
-                    id="image-upload"
+                    id="document-upload"
                     type="file"
-                    accept="image/*"
+                    accept=".pdf,.doc,.docx,.txt"
                     onChange={handleFileChange}
                     disabled={isLoading}
                     className="hidden"
@@ -118,8 +146,12 @@ const ImageUploader = ({ onUploadSuccess }) => {
                     {error}
                 </div>
             )}
+
+            <div className="text-[11px] text-zinc-400 mt-0.5">
+                PDF, DOC, DOCX, TXT
+            </div>
         </div>
     );
 };
 
-export default ImageUploader; 
+export default DocumentUploader; 
