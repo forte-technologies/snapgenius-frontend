@@ -108,7 +108,7 @@ function Dashboard() {
                         <div className="px-4 py-3">
                             <div className="flex items-center mb-2">
                                 <h3 className="text-xs font-medium text-zinc-600">Images</h3>
-                                <div className="ml-2 text-[10px] text-zinc-400 bg-zinc-50 px-1.5 py-0.5 rounded-full">JPG, PNG, GIF</div>
+                                <div className="ml-2 text-[10px] text-zinc-400 bg-zinc-50 px-1.5 py-0.5 rounded-full">JPG, PNG, GIF, WEBP</div>
                             </div>
                             <ImageUploader onUploadSuccess={handleUploadSuccess} />
                         </div>
@@ -117,7 +117,6 @@ function Dashboard() {
                         <div className="px-4 py-3">
                             <div className="flex items-center mb-2">
                                 <h3 className="text-xs font-medium text-zinc-600">Documents</h3>
-                                <div className="ml-2 text-[10px] text-zinc-400 bg-zinc-50 px-1.5 py-0.5 rounded-full">PDF, DOC, TXT</div>
                             </div>
                             <DocumentUploader onUploadSuccess={handleUploadSuccess} />
                         </div>

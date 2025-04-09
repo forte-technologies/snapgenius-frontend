@@ -18,13 +18,6 @@ const DocumentUploader = ({ onUploadSuccess }) => {
             return;
         }
 
-        // Check if file is a supported document type
-        const supportedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
-        if (!supportedTypes.includes(selectedFile.type)) {
-            setError('Only PDF, DOC, DOCX, and TXT files are supported');
-            return;
-        }
-
         const formData = new FormData();
         formData.append('file', selectedFile);
 
@@ -107,7 +100,6 @@ const DocumentUploader = ({ onUploadSuccess }) => {
                 <input
                     id="document-upload"
                     type="file"
-                    accept=".pdf,.doc,.docx,.txt"
                     onChange={handleFileChange}
                     disabled={isLoading}
                     className="hidden"
@@ -148,7 +140,7 @@ const DocumentUploader = ({ onUploadSuccess }) => {
             )}
 
             <div className="text-[11px] text-zinc-400 mt-0.5">
-                PDF, DOC, DOCX, TXT
+                PDF, DOC, DOCX, TXT, and others
             </div>
         </div>
     );

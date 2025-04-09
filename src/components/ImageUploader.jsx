@@ -18,12 +18,6 @@ const ImageUploader = ({ onUploadSuccess }) => {
             return;
         }
 
-        // Check if file is an image
-        if (!selectedFile.type.startsWith('image/')) {
-            setError('Only image files are allowed');
-            return;
-        }
-
         const formData = new FormData();
         formData.append('file', selectedFile);
 
@@ -79,7 +73,6 @@ const ImageUploader = ({ onUploadSuccess }) => {
                 <input
                     id="image-upload"
                     type="file"
-                    accept="image/*"
                     onChange={handleFileChange}
                     disabled={isLoading}
                     className="hidden"
