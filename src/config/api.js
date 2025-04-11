@@ -26,6 +26,10 @@ export const ENDPOINTS = {
     DOCUMENTS: {
       UPLOAD:`${API_BASE_URL}/api/user/documents`
     },
+    UPLOADS: {
+        GET_UPLOADS: `${API_BASE_URL}/api/user/uploads`,
+        DELETE_UPLOAD: (uploadId) => `${API_BASE_URL}/api/user/uploads/${uploadId}`
+    },
     CHAT: {
         RAG: `${API_BASE_URL}/api/user/chat/rag`,
         TOKEN: `${API_BASE_URL}/api/user/chat/token/token`,

@@ -9,6 +9,8 @@ function Uploads() {
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [totalItems, setTotalItems] = useState(0);
+    const [deleteConfirm, setDeleteConfirm] = useState(null);
+    const [deleting, setDeleting] = useState(false);
     const pageSize = 10;
 
     useEffect(() => {
@@ -18,11 +20,11 @@ function Uploads() {
     const fetchUploads = async (page, size) => {
         setLoading(true);
         try {
-            const response = await apiClient.get(ENDPOINTS.IMAGES.FILE_NAMES, {
+            const response = await apiClient.get(ENDPOINTS.UPLOADS.GET_UPLOADS, {
                 params: { page, size }
             });
             
-            setUploads(response.data.imageNames);
+            setUploads(response.data.uploads);
             setCurrentPage(response.data.currentPage);
             setTotalPages(response.data.totalPages);
             setTotalItems(response.data.totalItems);
@@ -38,6 +40,76 @@ function Uploads() {
     const handlePageChange = (newPage) => {
         if (newPage >= 0 && newPage < totalPages) {
             setCurrentPage(newPage);
+        }
+    };
+
+    const handleDeleteClick = (uploadId) => {
+        setDeleteConfirm(uploadId);
+    };
+
+    const cancelDelete = () => {
+        setDeleteConfirm(null);
+    };
+
+    const confirmDelete = async (uploadId) => {
+        setDeleting(true);
+        try {
+            await apiClient.delete(ENDPOINTS.UPLOADS.DELETE_UPLOAD(uploadId));
+            // Refresh the list
+            fetchUploads(currentPage, pageSize);
+            // Show success toast or message if needed
+        } catch (err) {
+            console.error('Error deleting upload:', err);
+            setError('Failed to delete the upload. Please try again.');
+        } finally {
+            setDeleteConfirm(null);
+            setDeleting(false);
+        }
+    };
+
+    // Get appropriate icon based on file type
+    const getFileIcon = (fileType) => {
+        if (fileType?.startsWith('image/')) {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-zinc-500">
+                    <path fillRule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clipRule="evenodd" />
+                </svg>
+            );
+        } else if (fileType?.includes('pdf')) {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-red-500">
+                    <path fillRule="evenodd" d="M5.625 1.5H9a3.75 3.75 0 013.75 3.75v1.875c0 1.036.84 1.875 1.875 1.875H16.5a3.75 3.75 0 013.75 3.75v7.875c0 1.035-.84 1.875-1.875 1.875H5.625a1.875 1.875 0 01-1.875-1.875V3.375c0-1.036.84-1.875 1.875-1.875zm5.845 17.03a.75.75 0 001.06 0l3-3a.75.75 0 10-1.06-1.06l-1.72 1.72V12a.75.75 0 00-1.5 0v4.19l-1.72-1.72a.75.75 0 00-1.06 1.06l3 3z" clipRule="evenodd" />
+                </svg>
+            );
+        } else if (fileType?.includes('word') || fileType?.includes('doc')) {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-blue-500">
+                    <path fillRule="evenodd" d="M5.625 1.5H9a3.75 3.75 0 013.75 3.75v1.875c0 1.036.84 1.875 1.875 1.875H16.5a3.75 3.75 0 013.75 3.75v7.875c0 1.035-.84 1.875-1.875 1.875H5.625a1.875 1.875 0 01-1.875-1.875V3.375c0-1.036.84-1.875 1.875-1.875zm6.905 9.97a.75.75 0 00-1.06 0l-3 3a.75.75 0 101.06 1.06l1.72-1.72V18a.75.75 0 001.5 0v-4.19l1.72 1.72a.75.75 0 101.06-1.06l-3-3z" clipRule="evenodd" />
+                </svg>
+            );
+        }
+        
+        // Default document icon
+        return (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-zinc-500">
+                <path fillRule="evenodd" d="M5.625 1.5H9a3.75 3.75 0 013.75 3.75v1.875c0 1.036.84 1.875 1.875 1.875H16.5a3.75 3.75 0 013.75 3.75v7.875c0 1.035-.84 1.875-1.875 1.875H5.625a1.875 1.875 0 01-1.875-1.875V3.375c0-1.036.84-1.875 1.875-1.875zM9 1.5H5.625c-1.036 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875H18.75a1.875 1.875 0 001.875-1.875V12.75A3.75 3.75 0 0016.5 9h-1.875A1.875 1.875 0 0112.75 7.125V5.25A3.75 3.75 0 009 1.5z" clipRule="evenodd" />
+            </svg>
+        );
+    };
+
+    // Format date nicely
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString(undefined, {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        } catch {
+            return '';
         }
     };
 
@@ -70,7 +142,7 @@ function Uploads() {
                         <h2 className="text-md font-medium text-zinc-800">All Uploads</h2>
                         {totalItems > 0 && (
                             <span className="text-xs text-zinc-500">
-                                {totalItems} {totalItems === 1 ? 'image' : 'images'} total
+                                {totalItems} {totalItems === 1 ? 'file' : 'files'}
                             </span>
                         )}
                     </div>
@@ -83,23 +155,54 @@ function Uploads() {
                         <div className="text-center py-8 text-red-500 text-sm">{error}</div>
                     ) : uploads.length === 0 ? (
                         <div className="text-center py-8 text-zinc-500 text-sm">
-                            You haven't uploaded any images yet.
+                            You haven't uploaded any files yet.
                         </div>
                     ) : (
                         <>
                             <div className="divide-y divide-zinc-100">
-                                {uploads.map((upload, index) => (
-                                    <div key={index} className="py-3 flex items-center">
-                                        <div className="h-10 w-10 rounded-lg bg-zinc-100 flex items-center justify-center mr-3">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-zinc-500">
-                                                <path fillRule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clipRule="evenodd" />
-                                            </svg>
+                                {uploads.map((upload) => (
+                                    <div key={upload.uploadId} className="py-3 flex items-center justify-between group hover:bg-zinc-50 rounded px-2 -mx-2 transition-colors">
+                                        <div className="flex items-center flex-1 min-w-0">
+                                            <div className="h-10 w-10 rounded-lg bg-zinc-100 flex items-center justify-center mr-3 flex-shrink-0">
+                                                {getFileIcon(upload.fileType)}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium text-zinc-800 truncate max-w-full">
+                                                    {upload.fileName}
+                                                </p>
+                                                <p className="text-xs text-zinc-500 truncate">
+                                                    {formatDate(upload.createdAt)}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div className="flex-1 text-left">
-                                            <p className="text-sm font-medium text-zinc-800 truncate max-w-full">
-                                                {upload.fileName}
-                                            </p>
-                                        </div>
+                                        
+                                        {deleteConfirm === upload.uploadId ? (
+                                            <div className="flex items-center space-x-2">
+                                                <button 
+                                                    onClick={() => confirmDelete(upload.uploadId)}
+                                                    disabled={deleting}
+                                                    className="text-xs px-2 py-1 rounded bg-red-500 text-white hover:bg-red-600 transition"
+                                                >
+                                                    {deleting ? 'Deleting...' : 'Confirm'}
+                                                </button>
+                                                <button 
+                                                    onClick={cancelDelete}
+                                                    className="text-xs px-2 py-1 rounded bg-zinc-100 text-zinc-700 hover:bg-zinc-200 transition"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <button 
+                                                onClick={() => handleDeleteClick(upload.uploadId)}
+                                                className="text-xs text-zinc-400 hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                aria-label="Delete"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                                                    <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clipRule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        )}
                                     </div>
                                 ))}
                             </div>
