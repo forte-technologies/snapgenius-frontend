@@ -36,6 +36,7 @@ export const ENDPOINTS = {
         STREAM: `${CHAT_MICROSERVICE_URL}/api/chat/stream`,
         MICRO_GENERAL_STREAM: `${CHAT_MICROSERVICE_URL}/api/chat/stream/general`,
         MICRO_STRICT_RAG_STREAM: `${CHAT_MICROSERVICE_URL}/api/chat/stream/rag`,
+        MICRO_GENERAL_ACADEMIC_STREAM: `${CHAT_MICROSERVICE_URL}/api/chat/stream/academic`,
         MAINAPP_GENERAL_RAG: `${API_BASE_URL}/api/user/chat/generalRag`
     },
 };

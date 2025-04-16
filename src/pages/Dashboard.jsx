@@ -1,165 +1,241 @@
 // src/pages/Dashboard.jsx
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/useAuth';
+import { apiClient, ENDPOINTS } from '../config/api'; // Import apiClient and ENDPOINTS
 import ImageUploader from '../components/ImageUploader';
 import DocumentUploader from '../components/DocumentUploader';
-import ChatInterface from '../components/ChatInterface';
+import PromptDialGroup from '../components/PromptDialGroup'; // Import PromptDialGroup
+import UnifiedChatInterface from '../components/UnifiedChatInterface'; // Import the new component
+
+// Import Views
+import ChatView from '../views/ChatView';
+import UploadsView from '../views/UploadsView';
+import SettingsView from '../views/SettingsView';
+
+// Define view modes
+const VIEWS = {
+    CHAT: 'chat',
+    UPLOADS: 'uploads',
+    SETTINGS: 'settings',
+};
+
+// Define chat modes
+const CHAT_MODES = {
+  IMAGE: 'image',
+  GENERAL: 'general',
+  ACADEMIC: 'academic',
+};
 
 function Dashboard() {
-    const { user, logout } = useAuth();
+    const { user, logout, accessToken } = useAuth(); // Get accessToken too
     const navigate = useNavigate();
+    
+    // State for the Dashboard
+    const [currentView, setCurrentView] = useState(VIEWS.CHAT); // Default view is chat
     const [uploadSuccess, setUploadSuccess] = useState(null);
+    const [activeChatMode, setActiveChatMode] = useState(CHAT_MODES.IMAGE); // Default mode
+    const [promptSettings, setPromptSettings] = useState({
+        tone: 0.5, complexity: 0.5, focus: 0.5, depth: 0.5, clarity: 0.5,
+    });
+    const [chatToken, setChatToken] = useState(null);
+    const [tokenError, setTokenError] = useState(null);
+    
+    // Fetch chat token logic (moved from AcademicChatPage)
+    useEffect(() => {
+        const fetchChatToken = async () => {
+            if (!accessToken) {
+                setChatToken(null);
+                setTokenError('Authentication token not found.');
+                return;
+            }
+            try {
+                setTokenError(null); 
+                const response = await apiClient.get(ENDPOINTS.CHAT.TOKEN); 
+                setChatToken(response.data.token);
+                console.log("Chat token fetched successfully for Dashboard.");
+            } catch (error) {
+                console.error('Dashboard: Error fetching chat token:', error);
+                setTokenError('Failed to initialize chat session. Please refresh.');
+                setChatToken(null); 
+            }
+        };
+        fetchChatToken();
+    }, [accessToken]);
 
+    // Logout Handler
     const handleLogout = async () => {
         const success = await logout();
-        if (success) {
-            navigate('/');
-        }
+        if (success) navigate('/');
     };
 
-    const handleUploadSuccess = (data) => {
-        setUploadSuccess({
-            message: `Successfully uploaded ${data.fileName}`,
-            timestamp: data.timestamp
-        });
-        
-        // Clear success message after 5 seconds
-        setTimeout(() => {
-            setUploadSuccess(null);
-        }, 5000);
-    };
+    // Upload Success Handler (displays temporary notification)
+    const handleUploadSuccess = useCallback((data) => {
+        setUploadSuccess({ message: `Uploaded ${data.fileName}`, timestamp: data.timestamp });
+        setTimeout(() => setUploadSuccess(null), 5000);
+        // TODO: Optionally notify the UnifiedChatInterface or trigger a refresh?
+    }, []);
+
+    // Component for Desktop Sidebar Chat Mode Buttons
+    const DesktopChatModeButton = ({ mode, label }) => (
+        <button
+            onClick={() => {
+                setCurrentView(VIEWS.CHAT); // Ensure chat view is active
+                setActiveChatMode(mode);   // Set the specific chat mode
+            }}
+            // Removed disabled state and styling
+            className={`w-full text-left text-sm px-3 py-2 rounded-md transition ${
+                activeChatMode === mode && currentView === VIEWS.CHAT // Highlight only if view is Chat AND mode is active
+                    ? 'bg-violet-600 text-white font-medium shadow-sm' 
+                    : 'text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100'
+            }`}
+        >
+            {label}
+        </button>
+    );
+    
+    // Component for Mobile Bottom Nav Buttons
+    const MobileNavLink = ({ view, label, icon }) => (
+        <button 
+            onClick={() => setCurrentView(view)}
+            className={`flex flex-col items-center justify-center pt-1 pb-1 flex-1 transition ${currentView === view ? 'text-violet-400' : 'text-zinc-400 hover:text-zinc-200'}`}
+        >
+            {icon}
+            <span className="text-[10px] mt-0.5">{label}</span>
+        </button>
+    );
+
+    // Determine main content padding based on mobile/desktop and view
+    // Mobile needs padding-top for header, padding-bottom for nav 
+    // Desktop needs no extra padding
+    const mainContentPadding = `pt-12 pb-16 md:pt-0 md:pb-0`; // Always pt-12, pb-16 on mobile now
 
     return (
-        <div className="flex flex-col min-h-screen bg-[#f9f9fa]">
-            {/* iOS-styled status bar for mobile */}
-            <div className="h-[44px] bg-white/80 backdrop-blur-md shadow-sm fixed top-0 left-0 right-0 z-10 flex items-center justify-between px-4 md:hidden">
-                <h1 className="font-['Plus_Jakarta_Sans'] font-light text-zinc-800">snapGenius</h1>
-                <button 
-                    onClick={handleLogout}
-                    className="text-xs font-medium text-[#10a37f]"
-                >
-                    Sign Out
-                </button>
-            </div>
+        <div className="relative flex h-screen bg-zinc-900 text-white overflow-hidden">
             
-            {/* Main content container with iOS-like padding and max width */}
-            <div className="flex-1 w-full max-w-3xl mx-auto px-4 pt-[56px] pb-20 md:py-6 md:px-6">
-                {/* Header with logo and logout (visible only on desktop) */}
-                <header className="flex justify-between items-center py-4 md:py-6">
-                    <h1 className="font-['Plus_Jakarta_Sans'] text-xl font-medium md:text-2xl text-zinc-800 hidden md:block">snapGenius</h1>
-                    <div className="hidden md:flex items-center gap-4">
-                        <Link 
-                            to="/uploads" 
-                            className="text-sm font-medium px-4 py-2 rounded-full bg-white border border-zinc-200 text-[#10a37f] hover:bg-zinc-50 transition shadow-sm"
-                        >
-                            View All Uploads
-                        </Link>
-                        <button
-                            onClick={handleLogout}
-                            className="text-sm font-medium px-4 py-2 rounded-full bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 transition shadow-sm"
-                        >
-                            Sign Out
-                        </button>
-                    </div>
-                </header>
+            {/* Re-added Fixed Top Bar (Mobile Only) */}
+            <header className="md:hidden fixed top-0 left-0 right-0 h-12 bg-zinc-800 border-b border-zinc-700 flex items-center justify-between px-4 z-20 shadow-sm">
+                <h1 className="font-['Plus_Jakarta_Sans'] text-base font-medium text-zinc-100">snapGenius</h1>
+                 <div className="flex items-center space-x-3">
+                      {/* REMOVED Uploads button/icon */}
+                     
+                      {/* Replaced Sign Out Icon with Text Button */}
+                     <button
+                        onClick={handleLogout}
+                        className="text-xs font-medium text-zinc-300 hover:text-white bg-zinc-700 hover:bg-zinc-600 px-2.5 py-1 rounded-md transition"
+                        title="Sign Out"
+                    >
+                        Logout
+                    </button>
+                 </div>
+            </header>
 
-                {/* User profile card */}
-                <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] px-6 py-5 mb-6 transition-all duration-300">
-                    <h2 className="text-md font-medium text-zinc-800 mb-3">Your Profile</h2>
-                    <p className="text-sm text-zinc-600 mb-1 flex items-center justify-between">
-                        <span className="font-medium">Email</span>
-                        <span className="text-zinc-800">{user?.email}</span>
-                    </p>
-                    <p className="text-sm text-zinc-600 flex items-center justify-between">
-                        <span className="font-medium">Status</span>
-                        <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
-                            {user?.isAuthenticated ? 'Active' : 'Inactive'}
-                        </span>
-                    </p>
+            {/* Fixed Sidebar (Desktop Only) */}
+            <aside className="hidden md:flex md:flex-col md:w-72 border-r border-zinc-700 p-4 space-y-4 overflow-y-auto bg-zinc-800">
+                {/* Sidebar Header */}
+                <div className="flex justify-between items-center">
+                    <h1 className="font-['Plus_Jakarta_Sans'] text-xl font-medium text-zinc-100">snapGenius</h1>
+                     <button
+                        onClick={handleLogout}
+                        className="text-xs px-2 py-1 rounded border border-zinc-600 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200 transition"
+                        title="Sign Out"
+                    >
+                        Sign Out
+                    </button>
                 </div>
 
-                {/* Success notification */}
-                {uploadSuccess && (
-                    <div className="fixed top-[56px] inset-x-0 md:top-6 z-20 px-4 pointer-events-none">
-                        <div className="bg-black/80 text-white backdrop-blur-md rounded-xl shadow-lg px-4 py-3 mx-auto max-w-sm text-sm font-medium flex justify-between items-center animate-fade-in">
-                            <span>{uploadSuccess.message}</span>
-                            <span className="text-xs text-white/70 ml-2">
-                                {new Date(uploadSuccess.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                            </span>
-                        </div>
+                {/* User Info */}
+                 <div className="text-xs text-zinc-400 border-t border-b border-zinc-700 py-2">
+                    Logged in as: <span className="font-medium text-zinc-300">{user?.email}</span>
+                 </div>
+
+                {/* Navigation/Mode Controls */}
+                <nav className="space-y-1">
+                    {/* Chat Mode Toggles (only functional when chat view is active) */}
+                    <DesktopChatModeButton mode={CHAT_MODES.IMAGE} label="Image Chat" />
+                    <DesktopChatModeButton mode={CHAT_MODES.GENERAL} label="General Chat" />
+                    <DesktopChatModeButton mode={CHAT_MODES.ACADEMIC} label="Academic AI" />
+                    {/* Separator */}
+                    <div className="pt-2 border-t border-zinc-700/50 !mt-3"></div> 
+                     {/* View Toggles */}
+                     <button onClick={() => setCurrentView(VIEWS.UPLOADS)} className={`w-full text-left text-sm px-3 py-2 rounded-md transition ${currentView === VIEWS.UPLOADS ? 'bg-zinc-600 text-white' : 'text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100'}`}>View Uploads</button>
+                     <button onClick={() => setCurrentView(VIEWS.SETTINGS)} className={`w-full text-left text-sm px-3 py-2 rounded-md transition ${currentView === VIEWS.SETTINGS ? 'bg-zinc-600 text-white' : 'text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100'}`}>Settings</button>
+                 </nav>
+
+                 {/* Conditional Prompt Tuner (Shows only if view is chat AND mode is academic) */}
+                 {currentView === VIEWS.CHAT && activeChatMode === CHAT_MODES.ACADEMIC && (
+                     <div className="border-t border-zinc-700 pt-4">
+                         <PromptDialGroup 
+                             settings={promptSettings} 
+                             onSettingsChange={setPromptSettings} 
+                         />
+                     </div>
+                 )}
+
+                 {/* Uploaders Section */}
+                 <div className="border-t border-zinc-700 pt-4 mt-auto space-y-3"> {/* mt-auto pushes to bottom */}
+                      <h3 className="text-sm font-medium text-zinc-200 mb-1">Upload New Files</h3>
+                       <ImageUploader onUploadSuccess={handleUploadSuccess} />
+                       <DocumentUploader onUploadSuccess={handleUploadSuccess} />
+                 </div>
+
+                 {/* Display Token Error */}
+                 {tokenError && (
+                    <div className="mt-2 p-2 bg-red-800 text-red-100 text-xs rounded border border-red-600 text-center">
+                        {tokenError}
                     </div>
+                 )}
+            </aside>
+
+            {/* Main Content Area - Updated Padding */}
+            <main className={`flex-1 flex flex-col bg-zinc-900 overflow-hidden ${mainContentPadding}`}>
+                {currentView === VIEWS.CHAT && (
+                     <ChatView 
+                        key={activeChatMode} 
+                        activeChatMode={activeChatMode}
+                        setActiveChatMode={setActiveChatMode} 
+                        promptSettings={promptSettings}
+                        setPromptSettings={setPromptSettings}
+                        chatToken={chatToken}
+                        tokenError={tokenError}
+                        onUploadSuccess={handleUploadSuccess}
+                    />
                 )}
-
-                {/* Sleek upload section */}
-                <div className="bg-white rounded-xl shadow-sm border border-zinc-100 mb-4">
-                    <div className="px-4 py-3 border-b border-zinc-100">
-                        <h2 className="text-sm font-medium text-zinc-800 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 mr-1.5 text-[#10a37f]">
-                                <path d="M9.25 13.25a.75.75 0 001.5 0V4.636l2.955 3.12a.75.75 0 001.09-1.03l-4.25-4.5a.75.75 0 00-1.09 0l-4.25 4.5a.75.75 0 101.09 1.03L9.25 4.636v8.614z" />
-                                <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" />
-                            </svg>
-                            Upload Files
-                        </h2>
-                    </div>
-                    
-                    <div className="divide-y divide-zinc-100">
-                        {/* Image uploader section */}
-                        <div className="px-4 py-3">
-                            <div className="flex items-center mb-2">
-                                <h3 className="text-xs font-medium text-zinc-600">Images</h3>
-                                <div className="ml-2 text-[10px] text-zinc-400 bg-zinc-50 px-1.5 py-0.5 rounded-full">JPG, PNG, GIF, WEBP</div>
-                            </div>
-                            <ImageUploader onUploadSuccess={handleUploadSuccess} />
-                        </div>
-                        
-                        {/* Document uploader section */}
-                        <div className="px-4 py-3">
-                            <div className="flex items-center mb-2">
-                                <h3 className="text-xs font-medium text-zinc-600">Documents</h3>
-                            </div>
-                            <DocumentUploader onUploadSuccess={handleUploadSuccess} />
-                        </div>
-                    </div>
-                </div>
-                
-                {/* Chat section */}
-                <div className="bg-white rounded-xl shadow-sm border border-zinc-100 px-4 py-3 mb-20 md:mb-4">
-                    <div className="mb-3">
-                        <h2 className="text-sm font-medium text-zinc-800 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 mr-1.5 text-[#10a37f]">
-                                <path fillRule="evenodd" d="M10 2c-2.236 0-4.43.18-6.57.524C1.993 2.755 1 4.014 1 5.426v5.148c0 1.413.993 2.67 2.43 2.902 1.168.188 2.352.327 3.55.414.28.02.521.18.642.413l1.713 3.293a.75.75 0 001.33 0l1.713-3.293a.783.783 0 01.642-.413 41.102 41.102 0 003.55-.414c1.437-.231 2.43-1.49 2.43-2.902V5.426c0-1.413-.993-2.67-2.43-2.902A41.289 41.289 0 0010 2zM6.75 6a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5zm0 2.5a.75.75 0 000 1.5h3.5a.75.75 0 000-1.5h-3.5z" clipRule="evenodd" />
-                            </svg>
-                            AI Assistant
-                        </h2>
-                        <p className="text-xs text-zinc-500">Ask questions about your uploaded files</p>
-                    </div>
-                    <ChatInterface />
-                </div>
-            </div>
+                {currentView === VIEWS.UPLOADS && <UploadsView />}
+                {currentView === VIEWS.SETTINGS && <SettingsView user={user} />}
+            </main>
             
-            {/* iOS-style bottom navigation for mobile */}
-            <div className="h-16 bg-white/90 backdrop-blur-md border-t border-zinc-200 fixed bottom-0 left-0 right-0 flex justify-around items-center px-6 md:hidden">
-                <button className="flex flex-col items-center justify-center text-[#10a37f]">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                        <path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" />
-                        <path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198c.03-.028.061-.056.091-.086L12 5.43z" />
-                    </svg>
-                    <span className="text-xs mt-1">Home</span>
-                </button>
-                <Link to="/uploads" className="flex flex-col items-center justify-center text-zinc-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                        <path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM17.25 19.128l-.001.144a2.25 2.25 0 01-.233.96 10.088 10.088 0 005.06-1.01.75.75 0 00.42-.643 4.875 4.875 0 00-6.957-4.611 8.586 8.586 0 011.71 5.157v.003z" />
-                    </svg>
-                    <span className="text-xs mt-1">Uploads</span>
-                </Link>
-                <button className="flex flex-col items-center justify-center text-zinc-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                        <path fillRule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 00-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 00-2.282.819l-.922 1.597a1.875 1.875 0 00.432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 000 1.139c.015.2-.059.352-.153.43l-.841.692a1.875 1.875 0 00-.432 2.385l.922 1.597a1.875 1.875 0 002.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.57.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 002.28-.819l.923-1.597a1.875 1.875 0 00-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 000-1.139c-.016-.2.059-.352.153-.43l.84-.692c.708-.582.891-1.59.433-2.385l-.922-1.597a1.875 1.875 0 00-2.282-.818l-1.02.382c-.114.043-.282.031-.449-.083a7.49 7.49 0 00-.985-.57c-.183-.087-.277-.227-.297-.348l-.179-1.072a1.875 1.875 0 00-1.85-1.567h-1.843zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" clipRule="evenodd" />
-                    </svg>
-                    <span className="text-xs mt-1">Settings</span>
-                </button>
-            </div>
+            {/* Mobile Bottom Navigation - Updated padding logic */}
+            {/* The pb adjustment might need tweaking based on actual chat controls height */}
+             <nav className={`md:hidden fixed bottom-0 left-0 right-0 h-16 bg-zinc-800 border-t border-zinc-700 flex justify-around items-stretch z-30 pb-[env(safe-area-inset-bottom)]`}>
+                 <MobileNavLink 
+                     view={VIEWS.CHAT} 
+                     label="Chat" 
+                     icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M2 5.25A3.25 3.25 0 0 1 5.25 2h9.5A3.25 3.25 0 0 1 18 5.25v9.5A3.25 3.25 0 0 1 14.75 18h-9.5A3.25 3.25 0 0 1 2 14.75v-9.5ZM5.25 4a1.75 1.75 0 0 0-1.75 1.75v.537l6.06 3.636a.75.75 0 0 0 .78 0l6.06-3.636V6.75a.25.25 0 0 1 .25-.25h.5a.75.75 0 0 1 0 1.5h-.5a1.75 1.75 0 0 0-1.75-1.75H5.25Z" clipRule="evenodd" /></svg>}
+                 />
+                 <MobileNavLink 
+                    view={VIEWS.UPLOADS} 
+                    label="Uploads" 
+                    icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path d="M9.25 13.25a.75.75 0 0 0 1.5 0V4.636l2.955 3.12a.75.75 0 0 0 1.09-1.03l-4.25-4.5a.75.75 0 0 0-1.09 0l-4.25 4.5a.75.75 0 1 0 1.09 1.03L9.25 4.636v8.614Z" /><path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" /></svg>}
+                />
+                <MobileNavLink 
+                    view={VIEWS.SETTINGS} 
+                    label="Settings" 
+                    icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M7.84 1.804a1 1 0 0 1 1.07.158l1.46 1.46a1 1 0 0 0 1.346-.056l1.578-1.578a1 1 0 0 1 1.414 0l1.414 1.414a1 1 0 0 1 0 1.414l-1.578 1.578a1 1 0 0 0-.056 1.346l1.46 1.46a1 1 0 0 1 .158 1.07l-.816 1.836a1 1 0 0 1-1.02.654l-1.98-.264a1 1 0 0 0-1.103.42l-1.34 1.608a1 1 0 0 1-1.256 0l-1.34-1.608a1 1 0 0 0-1.103-.42l-1.98.264a1 1 0 0 1-1.02-.654l-.816-1.836a1 1 0 0 1 .158-1.07l1.46-1.46a1 1 0 0 0-.056-1.346l-1.578-1.578a1 1 0 0 1 0-1.414L4.05 3.374a1 1 0 0 1 1.414 0l1.578 1.578a1 1 0 0 0 1.346.056l1.46-1.46a1 1 0 0 1 .158-1.07l.816-1.836Zm.97 10.29a2.196 2.196 0 1 0 0-4.392 2.196 2.196 0 0 0 0 4.392Z" clipRule="evenodd" /></svg>}
+                />
+            </nav>
+
+            {/* Success Notification */}
+            {uploadSuccess && (
+                <div className="fixed top-6 right-6 z-20 pointer-events-none">
+                    <div className="bg-black/80 text-white backdrop-blur-md rounded-xl shadow-lg px-4 py-3 max-w-sm text-sm font-medium flex justify-between items-center animate-fade-in">
+                        <span>{uploadSuccess.message}</span>
+                        <span className="text-xs text-white/70 ml-2">
+                            {new Date(uploadSuccess.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        </span>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
