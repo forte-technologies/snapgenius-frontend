@@ -12,7 +12,7 @@
 }
 
 html {
-  overflow-y: scroll; /* Always show scrollbar to prevent layout shift */
+  /* overflow-y: scroll; */ /* Removing global rule, will apply conditionally */
 }
 
 html, body, #root {

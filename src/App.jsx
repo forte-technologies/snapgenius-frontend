@@ -1,5 +1,5 @@
-import { Routes, Route } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
 import AuthProvider from './contexts/AuthProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicLayout from './components/PublicLayout';
@@ -17,7 +17,23 @@ const LoadingFallback = () => (
     </div>
 );
 
+// List of paths where the scrollbar should always be visible
+const scrollbarPaths = ['/', '/features', '/tools', '/pricing'];
+
 function App() {
+    const location = useLocation(); // Get current location
+
+    // Effect to manage the html overflow style based on path
+    useEffect(() => {
+        if (scrollbarPaths.includes(location.pathname)) {
+            document.documentElement.style.overflowY = 'scroll';
+        } else {
+            document.documentElement.style.overflowY = 'auto'; // Or '' or null
+        }
+        // Cleanup function is not strictly necessary here as we are resetting
+        // but good practice if we were adding/removing classes/listeners
+    }, [location.pathname]); // Re-run effect when path changes
+
     return (
         <AuthProvider>
             <Suspense fallback={<LoadingFallback />}>
