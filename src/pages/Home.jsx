@@ -46,7 +46,7 @@ function Home() {
                         className="mt-5 font-poppins text-lg md:text-xl md:mt-6 mx-auto max-w-4xl" 
                         style={{ color: bodyGray }}
                     >
-                        Upload documents and images. snapGenius uses AI to understand your content, allowing you to ask questions and get answers based directly on your uploads. Never worry about inaccurate answers again.
+                        Upload nearly infinite documents and images. snapGenius uses AI to intelligently save, embed, and understand your documents and images, allowing you to ask questions and get answers based directly on your uploads. Never worry about inaccurate answers again.
                     </p>
 
                     {/* Buttons - Centered */}
