@@ -152,7 +152,7 @@ function Dashboard() {
                 {/* Navigation/Mode Controls */}
                 <nav className="space-y-1">
                     {/* Chat Mode Toggles (only functional when chat view is active) */}
-                    <DesktopChatModeButton mode={CHAT_MODES.IMAGE} label="Image Chat" />
+                    <DesktopChatModeButton mode={CHAT_MODES.IMAGE} label="Chat About Your Uploads" />
                     <DesktopChatModeButton mode={CHAT_MODES.GENERAL} label="General Chat" />
                     <DesktopChatModeButton mode={CHAT_MODES.ACADEMIC} label="Academic AI" />
                     {/* Separator */}

@@ -1,13 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* font-family is now handled by Tailwind config */
   line-height: 1.5;
   font-weight: 400;
   color-scheme: light;
-  color: #213547;
+  color: #213547; 
   background-color: #ffffff;
+}
+
+html {
+  overflow-y: scroll; /* Always show scrollbar to prevent layout shift */
 }
 
 html, body, #root {
@@ -20,38 +25,28 @@ html, body, #root {
 body {
   background-color: white;
   color: black;
+  /* Base font will be set via Tailwind */
 }
 
-a {
-  font-weight: 500;
-  color: #10a37f;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #0e8f6e;
-}
-
+/* Keep basic heading style, but font-family/color will come from Tailwind */
 h1 {
-  font-size: 2rem;
+  /* font-size: 2rem; */ /* Removing this to allow Tailwind classes to work */
   line-height: 1.1;
 }
 
+/* Keep basic button reset, but font-family/weight/color will come from Tailwind */
 button {
-  border-radius: 6px;
+  /* border-radius: 6px; */ /* Often handled by utility classes */
   border: 1px solid transparent;
-  font-weight: 500;
-  font-family: inherit;
+  /* font-weight: 500; */ /* Handled by utility classes */
+  font-family: inherit; /* Good default */
   cursor: pointer;
 }
 
+/* Keep basic color scheme preference */
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
     background-color: #ffffff;
   }
-  a:hover {
-    color: #747bff;
-  }
-
 }
